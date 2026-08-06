@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Поддержать проект — донат</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Ссылка на отдельный CSS файл -->
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="coins" id="coins" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
+
+<main class="banner">
+  <svg class="stamp" viewBox="0 0 100 100" aria-hidden="true">
+    <defs><path id="circ" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"/></defs>
+    <text><textPath href="#circ">ПОДДЕРЖАТЬ ПРОЕКТ • СПАСИБО • ДОНАТ • </textPath></text>
+    <circle class="core" cx="50" cy="50" r="4"/>
+  </svg>
+
+  <div class="b-head"><span class="dot"></span> donate · поддержка проекта</div>
+
+  <h1><span class="split">ОТПРАВИТЬ</span><br><span class="split gold">МОНЕТКУ</span> 🪙</h1>
+  <p class="sub">Три способа поддержать проект — <b>картой</b>, <b>криптой</b> или через <b>СБП</b>. Нажмите «скопировать» и переведите любую комфортную сумму.</p>
+
+  <div class="tabs" role="tablist">
+    <div class="glider" id="glider"></div>
+    <button class="tab active" data-tab="card" role="tab">💳 Карта</button>
+    <button class="tab" data-tab="crypto" role="tab">₿ Крипта</button>
+    <button class="tab" data-tab="sbp" role="tab">⚡ СБП</button>
+  </div>
+
+  <div class="panels">
+
+    <div class="panel active" id="p-card">
+      <div class="cc-wrap">
+        <div>
+          <div class="credit-card" id="ccard" title="Нажмите, чтобы скопировать номер карты">
+            <div class="cc-top"><span class="cc-chip"></span><span class="cc-brand">МИР • VISA</span></div>
+            <div class="cc-num mono" id="ccNum"></div>
+            <div class="cc-bottom"><span id="ccHolder"></span><span>debit · rub</span></div>
+          </div>
+          <p class="cc-hint">↑ нажмите на карту или кнопку — номер скопируется</p>
+        </div>
+        <div class="cc-side">
+          <button class="copy" data-what="card">📋 Скопировать номер карты</button>
+          <p class="note">Перевод по номеру карты на имя <b id="ccName"></b>.<br>Комиссия — как за обычный перевод в вашем банке.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-crypto">
+      <div class="duo">
+        <div class="addr-box">
+          <div class="chains" id="chains"></div>
+          <div class="addr" id="addrView" title=""></div>
+          <button class="copy" data-what="crypto">📋 Скопировать адрес</button>
+          <p class="note">Отправляйте монеты только в выбранной сети — иначе они потеряются.</p>
+        </div>
+        <div><div class="qr"><img id="qrCrypto" alt="QR-код криптоадреса"></div><p class="qr-cap">скан → кошелёк</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-sbp">
+      <div class="duo">
+        <div class="addr-box">
+          <div class="phone-big" id="sbpPhone"></div>
+          <span class="bank-badge">🏦 банк: <b id="sbpBank"></b></span>
+          <button class="copy" data-what="sbp">📋 Скопировать номер телефона</button>
+          <p class="note">В приложении своего банка: «Перевод по СБП» → вставьте номер → готово, обычно без комиссии.</p>
+        </div>
+        <div><div class="qr"><img id="qrSbp" alt="QR-код номера СБП"></div><p class="qr-cap">скан → перевод</p></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="thanks"><i class="heart">♥</i> Спасибо! Каждый донат делает проект живее — обнимаю каждого.</p>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="tk" id="tk"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const CONFIG = {
+  name:   'IVAN PETROV',
+  ruName: 'Иван П.',
+  card: {
+    number: '2200 7000 1234 5678',
+  },
+  crypto: {
+    'USDT · TRC-20': 'TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    'BTC':           'bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'TON':           'UQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  },
+  sbp: {
+    phone: '+7 900 123-45-67',
+    bank:  'Сбер',
+  },
+};
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const finePtr = matchMedia('(pointer: fine)').matches;
+
+document.getElementById('ccNum').textContent = CONFIG.card.number;
+document.getElementById('ccHolder').textContent = CONFIG.name;
+document.getElementById('ccName').textContent = CONFIG.ruName;
+document.getElementById('sbpPhone').textContent = CONFIG.sbp.phone;
+document.getElementById('sbpBank').textContent = CONFIG.sbp.bank;
+document.getElementById('qrSbp').src =
+  'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' +
+  encodeURIComponent(CONFIG.sbp.phone.replace(/\s/g,''));
+
+const chainsBox = document.getElementById('chains');
+let currentAddr = '';
+Object.keys(CONFIG.crypto).forEach((key, i) => {
+  const b = document.createElement('button');
+  b.className = 'chain' + (i === 0 ? ' active' : '');
+  b.textContent = key;
+  b.addEventListener('click', () => {
+    chainsBox.querySelectorAll('.chain').forEach(c => c.classList.remove('active'));
+    b.classList.add('active'); setAddr(CONFIG.crypto[key]);
+  });
+  chainsBox.appendChild(b);
+  if (i === 0) setAddr(CONFIG.crypto[key]);
+});
+function setAddr(a){
+  currentAddr = a;
+  const v = document.getElementById('addrView');
+  v.textContent = a; v.title = a;
+  document.getElementById('qrCrypto').src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(a);
+}
+
+document.querySelectorAll('.split').forEach(word => {
+  const t = word.textContent; word.textContent = '';
+  [...t].forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.className = 'lt'; s.style.setProperty('--d', (i * 0.045) + 's');
+    s.textContent = ch; word.appendChild(s);
+  });
+});
+
+const tabs = document.querySelectorAll('.tab'),
+      glider = document.getElementById('glider');
+function moveGlider(btn){
+  glider.style.left = btn.offsetLeft + 'px';
+  glider.style.width = btn.offsetWidth + 'px';
+}
+tabs.forEach(btn => btn.addEventListener('click', () => {
+  tabs.forEach(t => t.classList.remove('active'));
+  btn.classList.add('active'); moveGlider(btn);
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('p-' + btn.dataset.tab).classList.add('active');
+}));
+addEventListener('load', () => moveGlider(document.querySelector('.tab.active')));
+addEventListener('resize', () => moveGlider(document.querySelector('.tab.active')));
+
+const ccard = document.getElementById('ccard');
+if (finePtr && !reduced){
+  ccard.addEventListener('mousemove', e => {
+    const r = ccard.getBoundingClientRect(),
+          x = (e.clientX - r.left)/r.width - .5,
+          y = (e.clientY - r.top)/r.height - .5;
+    ccard.style.transform = `perspective(800px) rotateY(${x*14}deg) rotateX(${-y*12}deg)`;
+  });
+  ccard.addEventListener('mouseleave', () => ccard.style.transform = '');
+}
+
+const labels = { card:'Номер карты', crypto:'Криптоадрес', sbp:'Номер СБП' };
+function getValue(what){
+  if (what === 'card')   return CONFIG.card.number.replace(/\s/g,'');
+  if (what === 'crypto') return currentAddr;
+  return CONFIG.sbp.phone;
+}
+document.querySelectorAll('[data-what]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const val = getValue(btn.dataset.what);
+    try { await navigator.clipboard.writeText(val); }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = val;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    toast('Скопировано ✓ ' + labels[btn.dataset.what]);
+    confetti(btn);
+    const old = btn.textContent;
+    btn.textContent = '✓ Скопировано!';
+    setTimeout(() => btn.textContent = old, 1600);
+  });
+});
+ccard.addEventListener('click', () => document.querySelector('[data-what="card"]').click());
+
+let tt;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function confetti(el){
+  if (reduced) return;
+  const r = el.getBoundingClientRect(),
+        cx = r.left + r.width/2, cy = r.top + r.height/2,
+        colors = ['#F2B33D','#FFDA7E','#F4EDDE','#FF5D4D'];
+  for (let i = 0; i < 16; i++){
+    const p = document.createElement('i'); p.className = 'cf';
+    p.style.cssText = `left:${cx}px;top:${cy}px;background:${colors[i%4]}`;
+    document.body.appendChild(p);
+    const a = Math.random()*Math.PI*2, d = 60 + Math.random()*90;
+    p.animate([
+      { transform:'translate(0,0) rotate(0deg)', opacity:1 },
+      { transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d - 40}px) rotate(${Math.random()*520-260}deg)`, opacity:0 }
+    ], { duration: 700 + Math.random()*400, easing:'cubic-bezier(.2,.7,.3,1)' })
+     .onfinish = () => p.remove();
+  }
+}
+
+if (!reduced){
+  const box = document.getElementById('coins'), sym = ['₽','₿','$','✦','€','♥'];
+  for (let i = 0; i < 14; i++){
+    const c = document.createElement('span'); c.className = 'coin';
+    const s = 14 + Math.random()*22;
+    c.style.cssText = `left:${Math.random()*100}%;width:${s}px;height:${s}px;font-size:${s*.55}px;` +
+      `animation-duration:${9 + Math.random()*10}s;animation-delay:${-Math.random()*14}s`;
+    c.textContent = sym[i % sym.length];
+    box.appendChild(c);
+  }
+}
+
+const items = ['спасибо за поддержку','каждый донат на вес золота','вы лучшие','монетка к монетке'];
+document.getElementById('tk').innerHTML =
+  Array(2).fill(items.map(t => `<span>✦ ${t}</span>`).join('')).join('');
+</script>
+</body>
+</html>
